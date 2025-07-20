@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Recurring Date Picker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: #f0f4f8;
+      padding: 40px;
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      max-width: 700px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 4px;
+      font-weight: 600;
+    }
+
+    select, input[type="date"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .day-select {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .day-select label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+
+    .preview {
+      background: #f9fafb;
+      border: 1px dashed #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 30px;
+    }
+
+    .preview h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .dates-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .date-item {
+      background: #e0f7fa;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 12px 16px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Recurring Date Picker</h1>
+
+    <label for="recurrence">Recurrence</label>
+    <select id="recurrence">
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+    </select>
+
+    <label for="interval">Repeat every X units</label>
+    <input type="number" id="interval" min="1" value="1" />
+
+    <label for="start-date">Start Date</label>
+    <input type="date" id="start-date" />
+
+    <label for="end-date">End Date (optional)</label>
+    <input type="date" id="end-date" />
+
+    <div id="weekly-options" style="display:none;">
+      <label>Select Days of the Week</label>
+      <div class="day-select">
+        <label><input type="checkbox" value="0"> Sun</label>
+        <label><input type="checkbox" value="1"> Mon</label>
+        <label><input type="checkbox" value="2"> Tue</label>
+        <label><input type="checkbox" value="3"> Wed</label>
+        <label><input type="checkbox" value="4"> Thu</label>
+        <label><input type="checkbox" value="5"> Fri</label>
+        <label><input type="checkbox" value="6"> Sat</label>
+      </div>
+    </div>
+
+    <button onclick="generateDates()">Generate Recurring Dates</button>
+
+    <div class="preview">
+      <h2>Recurring Dates Preview</h2>
+      <div id="dates" class="dates-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    const recurrenceSelect = document.getElementById('recurrence');
+    const weeklyOptions = document.getElementById('weekly-options');
+
+    recurrenceSelect.addEventListener('change', () => {
+      weeklyOptions.style.display = recurrenceSelect.value === 'weekly' ? 'block' : 'none';
+    });
+
+    function generateDates() {
+      const recurrence = recurrenceSelect.value;
+      const interval = parseInt(document.getElementById('interval').value);
+      const startDate = new Date(document.getElementById('start-date').value);
+      const endDateInput = document.getElementById('end-date').value;
+      const endDate = endDateInput ? new Date(endDateInput) : null;
+
+      const weekdays = Array.from(document.querySelectorAll('.day-select input:checked')).map(cb => parseInt(cb.value));
+      const result = [];
+      let current = new Date(startDate);
+
+      while (!endDate || current <= endDate) {
+        if (recurrence === 'weekly') {
+          if (weekdays.includes(current.getDay())) {
+            result.push(new Date(current));
+          }
+          current.setDate(current.getDate() + 1);
+        } else {
+          result.push(new Date(current));
+          if (recurrence === 'daily') {
+            current.setDate(current.getDate() + interval);
+          } else if (recurrence === 'monthly') {
+            current.setMonth(current.getMonth() + interval);
+          } else if (recurrence === 'yearly') {
+            current.setFullYear(current.getFullYear() + interval);
+          }
+        }
+      }
+
+      displayDates(result);
+    }
+
+    function displayDates(dates) {
+      const container = document.getElementById('dates');
+      container.innerHTML = '';
+      dates.forEach(date => {
+        const div = document.createElement('div');
+        div.className = 'date-item';
+        div.textContent = date.toISOString().split('T')[0];
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
